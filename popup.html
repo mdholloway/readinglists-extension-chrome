@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="popup.js"></script>
+  </head>
+  <body style="width: max-content; text-align: center">
+    <div><p id="test"></p></div>
+    <div id="loginPromptContainer" style="display:none">
+      <p>You must be logged in to add a page to a reading list.</p>
+      <button>Log in</button>
+    </div>
+    <div id="addToListSuccessContainer" style="display:none">
+      <p>Page added!</p>
+    </div>
+    <div id="addToListFailedContainer" style="display:none">
+      <p>Failed to add page:</p>
+      <p><strong id="failureReason"></strong></p>
+    </div>
+  </body>
+</html>
