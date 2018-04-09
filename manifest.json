@@ -16,8 +16,7 @@
     "https://*.wikiversity.org/",
     "https://*.wikinews.org/",
     "https://*.wikiquote.org/",
-    "https://*.wikimedia.org/",
-    "https://*.wikimediafoundation.org/"
+    "https://*.wikimedia.org/"
   ],
   "background": {
     "scripts": [ "background.js" ],

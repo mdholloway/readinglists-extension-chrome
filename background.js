@@ -12,8 +12,7 @@ const projectHosts = [
     'meta.wikimedia.org',
     'incubator.wikimedia.org',
     'commons.wikimedia.org',
-    'species.wikimedia.org',
-    'wikimediafoundation.org'
+    'species.wikimedia.org'
 ]
 
 const showIconConditions = projectHosts.map(hostSuffix => new chrome.declarativeContent.PageStateMatcher({
