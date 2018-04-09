@@ -58,9 +58,13 @@ function showAddToListFailureMessage(res) {
     show('addToListFailedContainer');
 }
 
+function mobileToCanonicalHost(url) {
+    url.hostname = url.hostname.replace(/^m\./, '').replace('.m.', '.');
+    return url;
+}
+
 function getAddToListPostBody(url) {
-    // TODO: handle m. URLs (by excising the m.)
-    return `project=${url.origin}&title=${parseTitleFromUrl(url)}`;
+    return `project=${mobileToCanonicalHost(url).origin}&title=${parseTitleFromUrl(url)}`;
 }
 
 function getAddToListPostOptions(url) {
@@ -93,7 +97,5 @@ function handleClick(url) {
 
 chrome.tabs.getSelected(tab => {
     handleClick(new URL(tab.url))
-    .catch(err => {
-        showAddToListFailureMessage(err);
-    });
+    .catch(err => showAddToListFailureMessage(err));
 });
