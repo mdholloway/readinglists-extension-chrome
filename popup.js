@@ -23,12 +23,24 @@ function getCsrfToken(origin) {
 function getDefaultListId(url) {
     return fetch(getReadingListsUrlForOrigin(url.origin), { credentials: 'same-origin' })
     .then(res => {
+        chrome.extension.getBackgroundPage().console.log(res);
         if (!res.ok) {
-            return setUpReadingListsForUser(url)
-            .then(res => getDefaultListId(url));
+            return res.json()
+            .then((res) => {
+                chrome.extension.getBackgroundPage().console.log(res);
+                if (res.title === 'readinglists-db-error-not-set-up') {
+                    return setUpReadingListsForUser(url)
+                    .then(res => getDefaultListId(url));
+                } else if (res.title === 'notloggedin') {
+                    return showLoginPrompt(url, res.detail);
+                } else {
+                    throw res;
+                }
+            });
+        } else {
+            return res.json()
+            .then(res => res.lists.filter(list => list.default)[0].id);
         }
-        return res.json()
-        .then(res => res.lists.filter(list => list.default)[0].id);
     });
 }
 
@@ -49,8 +61,9 @@ function showLoginPage(url) {
     chrome.tabs.update({ url: `${url.origin}/wiki/Special:UserLogin?returnto=${parseTitleFromUrl(url)}` });
 }
 
-function showLoginPrompt(url) {
+function showLoginPrompt(url, msg) {
     document.getElementById('loginButton').onclick = (element) => showLoginPage(url);
+    document.getElementById('loginPromptMessage').textContent = msg;
     show('loginPromptContainer');
 }
 
@@ -91,13 +104,13 @@ function addPageToDefaultList(url, listId, token) {
     .then(res => handleAddPageToListResult(res));
 }
 
-function handleTokenResult(url, token) {
-    return token === '+\\' ? showLoginPrompt(url) : getDefaultListId(url).then(listId => addPageToDefaultList(url, listId, token));
-}
-
 function handleClick(url) {
     // TODO: Add more filtering to declarativeContent conditions filter out non-page content (e.g., API responses)
-    return getCsrfToken(url.origin).then(token => handleTokenResult(url, token));
+    return getCsrfToken(url.origin).then(token => getDefaultListId(url).then(listId => {
+        if (Number.isInteger(listId)) {
+            addPageToDefaultList(url, listId, token);
+        }
+    }));
 }
 
 chrome.tabs.getSelected(tab => {
