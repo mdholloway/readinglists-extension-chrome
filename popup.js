@@ -54,7 +54,7 @@ function showAddToListSuccessMessage() {
 }
 
 function showAddToListFailureMessage(res) {
-    document.getElementById('failureReason').textContent = res.detail ? res.detail : res.title ? res.title : res.type;
+    document.getElementById('failureReason').textContent = res.detail ? res.detail : res.title ? res.title : res.type ? res.type : res;
     show('addToListFailedContainer');
 }
 
