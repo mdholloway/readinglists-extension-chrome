@@ -2,8 +2,8 @@ function getReadingListsUrlForOrigin(origin) {
     return `${origin}/api/rest_v1/data/lists/`;
 }
 
-function readingListSetupUrlForOrigin(origin) {
-    return `${origin}/api/rest_v1/data/lists/setup`;
+function readingListSetupUrlForOrigin(origin, token) {
+    return `${origin}/api/rest_v1/data/lists/setup?csrf_token=${encodeURIComponent(token)}`;
 }
 
 function readingListPostEntryUrlForOrigin(origin, listId, token) {
@@ -16,16 +16,27 @@ function csrfFetchUrlForOrigin(origin) {
 
 function getCsrfToken(origin) {
     return fetch(csrfFetchUrlForOrigin(origin), { credentials: 'same-origin' })
-        .then(res => res.json())
-        .then(res => res.query.tokens.csrftoken);
+    .then(res => res.json())
+    .then(res => res.query.tokens.csrftoken);
 }
 
-function getDefaultListId(origin) {
+function getDefaultListId(url) {
     // TODO: Stash default list ID in LocalStorage once fetched for the first time?
     // Counterpoint: This could cause trouble if the user tears down and then sets up lists again.
-    return fetch(getReadingListsUrlForOrigin(origin), { credentials: 'same-origin' })
-        .then(res => res.json())
+    return fetch(getReadingListsUrlForOrigin(url.origin), { credentials: 'same-origin' })
+    .then(res => {
+        if (!res.ok) {
+            return setUpReadingListsForUser(url)
+            .then(res => getDefaultListId(url));
+        }
+        return res.json()
         .then(res => res.lists.filter(list => list.default)[0].id);
+    })
+}
+
+function setUpReadingListsForUser(url) {
+    return getCsrfToken(url.origin)
+    .then(token => fetch(readingListSetupUrlForOrigin(url.origin, token), { method: 'POST', credentials: 'same-origin' }));
 }
 
 function parseTitleFromUrl(url) {
@@ -45,7 +56,6 @@ function showAddToListSuccessMessage() {
 }
 
 function showAddToListFailureMessage(res) {
-    chrome.extension.getBackgroundPage().console.log(res);
     document.getElementById('failureReason').textContent = res.detail ? res.detail : res.title ? res.title : res.type;
     show('addToListFailedContainer');
 }
@@ -75,7 +85,7 @@ function addPageToDefaultList(url, listId, token) {
 }
 
 function handleTokenResult(url, token) {
-    return token === '+\\' ? showLoginPrompt() : getDefaultListId(url.origin).then(listId => addPageToDefaultList(url, listId, token));
+    return token === '+\\' ? showLoginPrompt() : getDefaultListId(url).then(listId => addPageToDefaultList(url, listId, token));
 }
 
 function handleClick(url) {
@@ -84,15 +94,8 @@ function handleClick(url) {
 }
 
 chrome.tabs.getSelected(tab => {
-    const url = new URL(tab.url);
-    return handleClick(url)
+    handleClick(new URL(tab.url))
     .catch(err => {
-        if (err.title === 'readinglists-db-error-not-set-up') {
-            // setUpReadingListsForUser().then(() => handleClick(url));
-            chrome.extension.getBackgroundPage().console.log('readinglists-db-error-not-set-up caught!');
-            showAddToListFailureMessage(err);
-        } else {
-            showAddToListFailureMessage(err);
-        }
+        showAddToListFailureMessage(err);
     });
 });
