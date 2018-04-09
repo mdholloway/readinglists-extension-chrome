@@ -45,7 +45,12 @@ function show(id) {
     document.getElementById(id).style.display = 'block';
 }
 
-function showLoginPrompt() {
+function showLoginPage(url) {
+    chrome.tabs.update({ url: `${url.origin}/wiki/Special:UserLogin?returnto=${parseTitleFromUrl(url)}` });
+}
+
+function showLoginPrompt(url) {
+    document.getElementById('loginButton').onclick = (element) => showLoginPage(url);
     show('loginPromptContainer');
 }
 
@@ -87,7 +92,7 @@ function addPageToDefaultList(url, listId, token) {
 }
 
 function handleTokenResult(url, token) {
-    return token === '+\\' ? showLoginPrompt() : getDefaultListId(url).then(listId => addPageToDefaultList(url, listId, token));
+    return token === '+\\' ? showLoginPrompt(url) : getDefaultListId(url).then(listId => addPageToDefaultList(url, listId, token));
 }
 
 function handleClick(url) {

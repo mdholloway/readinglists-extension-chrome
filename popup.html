@@ -2,12 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8"/>
-    <script src="popup.js"></script>
   </head>
   <body style="width: max-content; text-align: center">
     <div id="loginPromptContainer" style="display:none">
       <p>You must be logged in to add a page to a reading list.</p>
-      <button>Log in</button>
+      <button id="loginButton">Log in</button>
     </div>
     <div id="addToListSuccessContainer" style="display:none">
       <p>Page added!</p>
@@ -16,5 +15,6 @@
       <p>Failed to add page:</p>
       <p><strong id="failureReason"></strong></p>
     </div>
+    <script src="popup.js"></script>
   </body>
 </html>
