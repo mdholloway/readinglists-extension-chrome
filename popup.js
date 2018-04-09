@@ -21,8 +21,6 @@ function getCsrfToken(origin) {
 }
 
 function getDefaultListId(url) {
-    // TODO: Stash default list ID in LocalStorage once fetched for the first time?
-    // Counterpoint: This could cause trouble if the user tears down and then sets up lists again.
     return fetch(getReadingListsUrlForOrigin(url.origin), { credentials: 'same-origin' })
     .then(res => {
         if (!res.ok) {
@@ -31,7 +29,7 @@ function getDefaultListId(url) {
         }
         return res.json()
         .then(res => res.lists.filter(list => list.default)[0].id);
-    })
+    });
 }
 
 function setUpReadingListsForUser(url) {
@@ -71,7 +69,7 @@ function getAddToListPostOptions(url) {
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         credentials: 'same-origin',
         body: getAddToListPostBody(url)
-    }
+    };
 }
 
 function handleAddPageToListResult(res) {
